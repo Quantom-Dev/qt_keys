@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantom Keys</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            height: 100vh;
+            width: 100vw;
+            background: transparent;
+            user-select: none;
+        }
+        .rageui-menu {
+            position: absolute;
+            top: 20px;
+            width: 350px;
+            background: rgba(15, 15, 25, 0.95);
+            border-radius: 3px;
+            color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            transition: left 0.3s, right 0.3s;
+        }
+        .rageui-menu.position-left {
+            left: 20px;
+            right: auto;
+        }
+        .rageui-menu.position-right {
+            left: auto;
+            right: 20px;
+        }
+        .rageui-header {
+            background: rgba(10, 10, 20, 0.95);
+            padding: 15px;
+            position: relative;
+        }
+        .rageui-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .rageui-subtitle {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+        .rageui-items {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .rageui-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .rageui-item:hover {
+            background: rgba(55, 55, 70, 0.5);
+        }
+        .rageui-item.active {
+            background: rgba(30, 30, 50, 0.8);
+        }
+        .rageui-item-icon {
+            width: 25px;
+            text-align: center;
+            margin-right: 10px;
+        }
+        .rageui-item-label {
+            flex-grow: 1;
+            font-size: 14px;
+        }
+        .rageui-item-right {
+            font-size: 11px;
+            opacity: 0.7;
+        }
+        .rageui-item-toggle {
+            width: 40px;
+            text-align: right;
+        }
+        .rageui-item-input-container {
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            background: rgba(20, 20, 30, 0.8);
+        }
+        .rageui-input {
+            background: rgba(10, 10, 15, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 8px 10px;
+            font-family: 'Poppins', sans-serif;
+            margin-bottom: 10px;
+            font-size: 14px;
+            border-radius: 3px;
+        }
+        .rageui-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .rageui-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        .rageui-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+        }
+        .rageui-button {
+            background: rgba(30, 30, 50, 0.8);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            border-radius: 3px;
+            transition: background 0.2s;
+        }
+        .rageui-button:hover {
+            background: rgba(50, 50, 80, 0.8);
+        }
+        .rageui-button.cancel {
+            background: rgba(80, 20, 20, 0.8);
+        }
+        .rageui-button.cancel:hover {
+            background: rgba(120, 30, 30, 0.8);
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 15px;
+            border-radius: 3px;
+            color: white;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 1000;
+        }
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .notification.success {
+            background: linear-gradient(90deg, #0a8043 0%, #00af58 100%);
+        }
+        .notification.error {
+            background: linear-gradient(90deg, #af0000 0%, #d40000 100%);
+        }
+        .key-info {
+            background: rgba(20, 20, 30, 0.8);
+            margin: 10px 15px;
+            padding: 10px;
+            border-radius: 3px;
+            border-left: 3px solid rgba(255, 255, 255, 0.2);
+        }
+        .key-info-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .key-info-details {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .key-info-details span {
+            display: inline-block;
+            margin-right: 10px;
+        }
+        .rageui-items::-webkit-scrollbar {
+            width: 5px;
+        }
+        .rageui-items::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+        .rageui-items::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+        .loader {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px 30px;
+            border-radius: 5px;
+            display: none;
+        }
+        .loader-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="rageui-menu" v-if="menuVisible" :class="'position-' + menuPosition">
+            <div class="rageui-header">
+                <div class="rageui-title">{{ currentMenu.title }}</div>
+                <div class="rageui-subtitle">{{ currentMenu.subtitle }}</div>
+            </div>
+            
+            <div class="rageui-items" v-if="activeMenu === 'main'">
+                <div 
+                    v-for="(item, index) in mainMenuItems" 
+                    :key="index"
+                    class="rageui-item"
+                    :class="{ 'active': activeIndex === index }"
+                    @click="selectItem(item)"
+                >
+                    <div class="rageui-item-icon">
+                        <i :class="item.icon"></i>
+                    </div>
+                    <div class="rageui-item-label">{{ item.label }}</div>
+                    <div class="rageui-item-right" v-if="item.right">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+                
+                <div 
+                    class="rageui-item"
+                    @click="toggleMenuPosition()"
+                >
+                    <div class="rageui-item-icon">
+                        <i class="fas fa-arrows-left-right"></i>
+                    </div>
+                    <div class="rageui-item-label">Position du menu</div>
+                    <div class="rageui-item-toggle">
+                        {{ menuPosition === 'left' ? 'Gauche' : 'Droite' }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="rageui-items" v-if="activeMenu === 'vehicles'">
+                <div 
+                    v-for="(vehicle, index) in vehicles" 
+                    :key="index"
+                    class="rageui-item"
+                    :class="{ 'active': activeIndex === index }"
+                    @click="selectVehicle(vehicle)"
+                >
+                    <div class="rageui-item-icon">
+                        <i class="fas fa-car"></i>
+                    </div>
+                    <div class="rageui-item-label">{{ vehicle.model }}</div>
+                    <div class="rageui-item-right">{{ vehicle.plate }}</div>
+                </div>
+                
+                <div class="rageui-item" @click="goBack()">
+                    <div class="rageui-item-icon">
+                        <i class="fas fa-arrow-left"></i>
+                    </div>
+                    <div class="rageui-item-label">Retour</div>
+                </div>
+            </div>
+            
+            <div class="rageui-items" v-if="activeMenu === 'keys'">
+                <div 
+                    v-for="(key, index) in playerKeys" 
+                    :key="index"
+                    class="rageui-item"
+                    :class="{ 'active': activeIndex === index }"
+                    @click="selectKey(key)"
+                >
+                    <div class="rageui-item-icon">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <div class="rageui-item-label">{{ key.model }}</div>
+                    <div class="rageui-item-right">{{ key.plate }}</div>
+                </div>
+                
+                <div class="rageui-item" @click="goBack()">
+                    <div class="rageui-item-icon">
+                        <i class="fas fa-arrow-left"></i>
+                    </div>
+                    <div class="rageui-item-label">Retour</div>
+                </div>
+            </div>
+            
+            <div class="rageui-items" v-if="activeMenu === 'players'">
+                <div 
+                    v-for="(player, index) in nearbyPlayers" 
+                    :key="index"
+                    class="rageui-item"
+                    :class="{ 'active': activeIndex === index }"
+                    @click="selectPlayer(player)"
+                >
+                    <div class="rageui-item-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="rageui-item-label">{{ player.name }}</div>
+                    <div class="rageui-item-right">ID: {{ player.id }}</div>
+                </div>
+                
+                <div class="rageui-item" @click="goBack()">
+                    <div class="rageui-item-icon">
+                        <i class="fas fa-arrow-left"></i>
+                    </div>
+                    <div class="rageui-item-label">Retour</div>
+                </div>
+            </div>
+            
+            <div class="rageui-items" v-if="activeMenu === 'create'">
+                <div class="rageui-item-input-container">
+                    <input 
+                        type="text" 
+                        v-model="manualKeyForm.plate" 
+                        placeholder="Plaque d'immatriculation" 
+                        class="rageui-input"
+                        @input="manualKeyForm.plate = manualKeyForm.plate.toUpperCase()"
+                        maxlength="8"
+                    >
+                    <input 
+                        type="text" 
+                        v-model="manualKeyForm.model" 
+                        placeholder="Modèle du véhicule" 
+                        class="rageui-input"
+                        maxlength="20"
+                    >
+                    
+                    <div class="rageui-buttons">
+                        <button class="rageui-button" @click="createManualKey()">Créer</button>
+                        <button class="rageui-button cancel" @click="goBack()">Annuler</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="rageui-items" v-if="activeMenu === 'vehicle_details'">
+                <div class="key-info" v-if="selectedVehicle">
+                    <div class="key-info-title">{{ selectedVehicle.model }}</div>
+                    <div class="key-info-details">
+                        <span><i class="fas fa-id-card"></i> {{ selectedVehicle.plate }}</span>
+                    </div>
+                </div>
+                
+                <div class="rageui-item" @click="createKeySelf()">
+                    <div class="rageui-item-icon">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <div class="rageui-item-label">Créer une clé pour moi</div>
+                </div>
+                
+                <div class="rageui-item" @click="navigateTo('players', 'give_vehicle_key')">
+                    <div class="rageui-item-icon">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div class="rageui-item-label">Créer une clé pour un joueur</div>
+                </div>
+                
+                <div class="rageui-item" @click="goBack()">
+                    <div class="rageui-item-icon">
+                        <i class="fas fa-arrow-left"></i>
+                    </div>
+                    <div class="rageui-item-label">Retour</div>
+                </div>
+            </div>
+            
+            <div class="rageui-items" v-if="activeMenu === 'key_details'">
+                <div class="key-info" v-if="selectedKey">
+                    <div class="key-info-title">{{ selectedKey.model }}</div>
+                    <div class="key-info-details">
+                        <span><i class="fas fa-id-card"></i> {{ selectedKey.plate }}</span>
+                    </div>
+                </div>
+                
+                <div class="rageui-item" @click="navigateTo('players', 'give_key')">
+                    <div class="rageui-item-icon">
+                        <i class="fas fa-share-alt"></i>
+                    </div>
+                    <div class="rageui-item-label">Donner cette clé</div>
+                </div>
+                
+                <div class="rageui-item" @click="goBack()">
+                    <div class="rageui-item-icon">
+                        <i class="fas fa-arrow-left"></i>
+                    </div>
+                    <div class="rageui-item-label">Retour</div>
+                </div>
+            </div>
+        </div>
+        
+        <div 
+            class="notification"
+            :class="{ 
+                'show': notification.show,
+                'success': notification.type === 'success',
+                'error': notification.type === 'error'
+            }"
+        >
+            <i :class="notification.icon"></i>
+            {{ notification.message }}
+        </div>
+        
+        <div class="loader" :style="{ display: loading ? 'block' : 'none' }">
+            <div class="loader-spinner"></div>
+            <div>Chargement...</div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.prod.min.js"></script>
+    
+    <script>
+        const app = Vue.createApp({
+            data() {
+                return {
+                    menuVisible: false,
+                    activeMenu: 'main',
+                    activeIndex: 0,
+                    menuHistory: [],
+                    returnData: null,
+                    loading: false,
+                    menuPosition: 'left',
+                    
+                    playerJob: '',
+                    playerId: 0,
+                    vehicles: [],
+                    nearbyPlayers: [],
+                    playerKeys: [],
+                    selectedVehicle: null,
+                    selectedKey: null,
+                    selectedPlayer: null,
+                    
+                    menus: {
+                        main: {
+                            title: "Gestion des Clés",
+                            subtitle: "Concessionnaire",
+                            items: [
+                                { label: "Véhicules à proximité", icon: "fas fa-car", action: "vehicles", right: true },
+                                { label: "Créer une clé manuelle", icon: "fas fa-key", action: "create", right: true },
+                                { label: "Mes clés", icon: "fas fa-key", action: "keys", right: true },
+                                { label: "Fermer", icon: "fas fa-times", action: "close" }
+                            ]
+                        }
+                    },
+                    
+                    manualKeyForm: {
+                        plate: '',
+                        model: ''
+                    },
+                    
+                    notification: {
+                        show: false,
+                        message: '',
+                        type: 'success',
+                        icon: 'fas fa-check-circle'
+                    }
+                };
+            },
+            computed: {
+                currentMenu() {
+                    return this.menus[this.activeMenu] || this.menus.main;
+                },
+                
+                mainMenuItems() {
+                    return this.menus.main.items;
+                }
+            },
+            methods: {
+                toggleMenuPosition() {
+                    this.menuPosition = this.menuPosition === 'left' ? 'right' : 'left';
+                    try {
+                        localStorage.setItem('quantomkeys_menu_position', this.menuPosition);
+                    } catch (e) {}
+                },
+                
+                openMenu(data) {
+                    this.menuVisible = true;
+                    this.activeMenu = 'main';
+                    this.activeIndex = 0;
+                    this.menuHistory = [];
+                    
+                    if (data) {
+                        this.playerJob = data.job || '';
+                        this.playerId = data.playerId || 0;
+                        this.vehicles = data.vehicles || [];
+                        this.nearbyPlayers = data.players || [];
+                        this.playerKeys = data.keys || [];
+                    }
+                    
+                    try {
+                        const savedPosition = localStorage.getItem('quantomkeys_menu_position');
+                        if (savedPosition) {
+                            this.menuPosition = savedPosition;
+                        }
+                    } catch (e) {}
+                },
+                
+                closeMenu() {
+                    this.menuVisible = false;
+                    fetch(`https://${this.getResourceName()}/closeMenu`, {
+                        method: 'POST'
+                    }).catch(e => {});
+                },
+                
+                getResourceName() {
+                    return window.GetParentResourceName ? window.GetParentResourceName() : 'quantom_keys';
+                },
+                
+                navigateTo(menu, returnContext = null) {
+                    if (returnContext) {
+                        this.returnData = returnContext;
+                    }
+                    
+                    this.menuHistory.push({
+                        menu: this.activeMenu,
+                        index: this.activeIndex,
+                        returnData: this.returnData
+                    });
+                    
+                    this.activeMenu = menu;
+                    this.activeIndex = 0;
+                },
+                
+                goBack() {
+                    if (this.menuHistory.length > 0) {
+                        const previousState = this.menuHistory.pop();
+                        this.activeMenu = previousState.menu;
+                        this.activeIndex = previousState.index;
+                        this.returnData = previousState.returnData;
+                    } else {
+                        this.activeMenu = 'main';
+                        this.activeIndex = 0;
+                        this.returnData = null;
+                    }
+                },
+                
+                selectItem(item) {
+                    if (!item) return;
+                    
+                    if (item.action === 'close') {
+                        this.closeMenu();
+                    } 
+                    else if (item.action === 'vehicles') {
+                        this.navigateTo('vehicles');
+                    } 
+                    else if (item.action === 'create') {
+                        this.navigateTo('create');
+                    } 
+                    else if (item.action === 'keys') {
+                        this.navigateTo('keys');
+                    }
+                },
+                
+                selectVehicle(vehicle) {
+                    this.selectedVehicle = vehicle;
+                    this.navigateTo('vehicle_details');
+                },
+                
+                selectKey(key) {
+                    this.selectedKey = key;
+                    this.navigateTo('key_details');
+                },
+                
+                selectPlayer(player) {
+                    this.selectedPlayer = player;
+                    
+                    if (this.returnData === 'give_vehicle_key') {
+                        this.createKeyForPlayer(player.id);
+                    } 
+                    else if (this.returnData === 'give_key') {
+                        this.giveKeyToPlayer(player.id);
+                    }
+                    
+                    this.goBack();
+                },
+                
+                createManualKey() {
+                    if (!this.manualKeyForm.plate) {
+                        this.showNotification("Veuillez entrer une plaque", "error");
+                        return;
+                    }
+                    
+                    const model = this.manualKeyForm.model || "Véhicule";
+                    
+                    this.loading = true;
+                    this.createKey(this.playerId, this.manualKeyForm.plate, model)
+                        .then(() => {
+                            this.showNotification(`Clé créée pour ${model} (${this.manualKeyForm.plate})`, 'success');
+                            this.manualKeyForm.plate = '';
+                            this.manualKeyForm.model = '';
+                            this.goBack();
+                        })
+                        .finally(() => {
+                            this.loading = false;
+                        });
+                },
+                
+                createKeySelf() {
+                    if (!this.selectedVehicle) return;
+                    
+                    this.loading = true;
+                    this.createKey(this.playerId, this.selectedVehicle.plate, this.selectedVehicle.model)
+                        .then(() => {
+                            this.showNotification(`Clé créée pour ${this.selectedVehicle.model}`, 'success');
+                            this.goBack();
+                        })
+                        .finally(() => {
+                            this.loading = false;
+                        });
+                },
+                
+                createKeyForPlayer(playerId) {
+                    if (!this.selectedVehicle) return;
+                    
+                    this.loading = true;
+                    this.createKey(playerId, this.selectedVehicle.plate, this.selectedVehicle.model)
+                        .then(() => {
+                            this.showNotification(`Clé créée pour le joueur #${playerId}`, 'success');
+                            this.navigateTo('main');
+                        })
+                        .finally(() => {
+                            this.loading = false;
+                        });
+                },
+                
+                giveKeyToPlayer(playerId) {
+                    if (!this.selectedKey) return;
+                    
+                    this.loading = true;
+                    this.giveKey(playerId, this.selectedKey.plate, this.selectedKey.model)
+                        .then(() => {
+                            this.showNotification(`Clé donnée au joueur #${playerId}`, 'success');
+                            this.navigateTo('main');
+                        })
+                        .finally(() => {
+                            this.loading = false;
+                        });
+                },
+                
+                createKey(targetId, plate, model) {
+                    return fetch(`https://${this.getResourceName()}/createKey`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({targetId, plate, model})
+                    }).catch(e => {});
+                },
+                
+                giveKey(targetId, plate, model) {
+                    return fetch(`https://${this.getResourceName()}/giveKey`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({targetId, plate, model})
+                    }).catch(e => {});
+                },
+                
+                showNotification(message, type = 'success') {
+                    let icon = 'fas fa-check-circle';
+                    if (type === 'error') icon = 'fas fa-exclamation-circle';
+                    
+                    this.notification = {
+                        show: true,
+                        message,
+                        type,
+                        icon
+                    };
+                    
+                    setTimeout(() => {
+                        this.notification.show = false;
+                    }, 3000);
+                }
+            },
+            mounted() {
+                try {
+                    const savedPosition = localStorage.getItem('quantomkeys_menu_position');
+                    if (savedPosition) {
+                        this.menuPosition = savedPosition;
+                    }
+                } catch (e) {}
+                
+                window.addEventListener('keydown', (e) => {
+                    if (!this.menuVisible) return;
+                    
+                    if (this.activeMenu === 'create') {
+                        if (e.key === 'Escape') {
+                            this.goBack();
+                        }
+                        return;
+                    }
+                    
+                    if (e.key === 'Escape') {
+                        this.closeMenu();
+                    }
+                    else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        const items = this.activeMenu === 'main' ? this.mainMenuItems : 
+                                     (this.activeMenu === 'vehicles' ? this.vehicles : 
+                                      this.activeMenu === 'keys' ? this.playerKeys : 
+                                      this.activeMenu === 'players' ? this.nearbyPlayers : []);
+                        
+                        const additionalItems = this.activeMenu === 'main' ? 1 : 0;
+                        
+                        const itemCount = items.length + additionalItems + (this.activeMenu !== 'main' ? 1 : 0);
+                        this.activeIndex = (this.activeIndex - 1 + itemCount) % itemCount;
+                    }
+                    else if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        const items = this.activeMenu === 'main' ? this.mainMenuItems : 
+                                     (this.activeMenu === 'vehicles' ? this.vehicles : 
+                                      this.activeMenu === 'keys' ? this.playerKeys : 
+                                      this.activeMenu === 'players' ? this.nearbyPlayers : []);
+                        
+                        const additionalItems = this.activeMenu === 'main' ? 1 : 0;
+                        
+                        const itemCount = items.length + additionalItems + (this.activeMenu !== 'main' ? 1 : 0);
+                        this.activeIndex = (this.activeIndex + 1) % itemCount;
+                    }
+                    else if (e.key === 'Enter') {
+                        e.preventDefault();
+                        
+                        if (this.activeMenu === 'main') {
+                            if (this.activeIndex === this.mainMenuItems.length) {
+                                this.toggleMenuPosition();
+                            } else {
+                                this.selectItem(this.mainMenuItems[this.activeIndex]);
+                            }
+                        } 
+                        else if (this.activeMenu === 'vehicles') {
+                            if (this.activeIndex < this.vehicles.length) {
+                                this.selectVehicle(this.vehicles[this.activeIndex]);
+                            } else {
+                                this.goBack();
+                            }
+                        }
+                        else if (this.activeMenu === 'keys') {
+                            if (this.activeIndex < this.playerKeys.length) {
+                                this.selectKey(this.playerKeys[this.activeIndex]);
+                            } else {
+                                this.goBack();
+                            }
+                        }
+                        else if (this.activeMenu === 'players') {
+                            if (this.activeIndex < this.nearbyPlayers.length) {
+                                this.selectPlayer(this.nearbyPlayers[this.activeIndex]);
+                            } else {
+                                this.goBack();
+                            }
+                        }
+                        else if (this.activeMenu === 'vehicle_details') {
+                            const actions = [
+                                () => this.createKeySelf(),
+                                () => this.navigateTo('players', 'give_vehicle_key'),
+                                () => this.goBack()
+                            ];
+                            if (this.activeIndex < actions.length) {
+                                actions[this.activeIndex]();
+                            }
+                        }
+                        else if (this.activeMenu === 'key_details') {
+                            const actions = [
+                                () => this.navigateTo('players', 'give_key'),
+                                () => this.goBack()
+                            ];
+                            if (this.activeIndex < actions.length) {
+                                actions[this.activeIndex]();
+                            }
+                        }
+                    }
+                    else if (e.key === 'Backspace') {
+                        e.preventDefault();
+                        this.goBack();
+                    }
+                });
+                
+                window.addEventListener('message', (event) => {
+                    const data = event.data;
+                    
+                    if (data.type === 'openCardealerMenu') {
+                        this.openMenu(data);
+                    } 
+                    else if (data.type === 'updateNearbyData') {
+                        this.vehicles = data.vehicles || this.vehicles;
+                        this.nearbyPlayers = data.players || this.nearbyPlayers;
+                        this.playerKeys = data.keys || this.playerKeys;
+                    }
+                });
+            }
+        }).mount('#app');
+        
+        window.forceOpenMenu = function() {
+            const testData = {
+                job: 'cardealer',
+                playerId: 1,
+                vehicles: [
+                    {plate: "ABC123", model: "Adder"},
+                    {plate: "XYZ789", model: "Sultan RS"}
+                ],
+                players: [
+                    {id: 2, name: "Joueur Test 1"},
+                    {id: 3, name: "Joueur Test 2"}
+                ],
+                keys: [
+                    {plate: "DEF456", model: "T20"},
+                    {plate: "GHI789", model: "Zentorno"}
+                ]
+            };
+            
+            app.openMenu(testData);
+        };
+    </script>
+</body>
+</html>
